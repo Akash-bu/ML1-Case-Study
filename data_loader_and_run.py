@@ -1,27 +1,14 @@
 import numpy as np
 import pandas as pd
+from helper_functions import macro_f1, plot_loss_curve
 
 from model import Model
 
-# Paths
 TRAIN_PATH = "data_sets/train_df.csv"
 TEST_PATH = "data_sets/test_df.csv"
 SUB_PATH = "data_sets/submission.csv"
 OUT_PATH = "data_sets/submission.csv"
 
-def macro_f1(y_true, y_pred, n_classes):
-    f1s = []
-    for c in range(n_classes):
-        tp = np.sum((y_true == c) & (y_pred == c))
-        fp = np.sum((y_true != c) & (y_pred == c))
-        fn = np.sum((y_true == c) & (y_pred != c))
-        precision = tp / (tp + fp + 1e-12)
-        recall = tp / (tp + fn + 1e-12)
-        f1 = 2 * precision * recall / (precision + recall + 1e-12)
-        f1s.append(f1)
-    return float(np.mean(f1s))
-
-# Load data
 train_df = pd.read_csv(TRAIN_PATH)
 test_df = pd.read_csv(TEST_PATH)
 sub_df = pd.read_csv(SUB_PATH)
@@ -35,7 +22,6 @@ test_cols = set(test_df.columns)
 
 feature_cols = sorted(list((train_cols & test_cols) - ignore_cols))
 
-# Prepare numpy arrays
 X = train_df[feature_cols].values
 y = train_df[target_col].values.astype(int)
 
@@ -49,10 +35,15 @@ X_train, y_train = X[train_idx], y[train_idx]
 X_val, y_val = X[val_idx], y[val_idx]
 
 # Train on train split
-model = Model(lr=0.05, epochs=1000, l2=1e-3, use_class_weights=True, verbose=True)
-model.fit(X_train, y_train)
+model = Model(lr=0.1, epochs=1000, l2=0.05, use_class_weights=True, verbose=True)
+model.fit(X_train, y_train, X_val=X_val, y_val=y_val, eval_every=50, eval_patience=3)
 
-# Validate
+# plot_loss_curve(model.loss_history, title="Train Loss")
+
+# print("Train label distribution:", np.bincount(y_train))
+# print("Val predictions distribution:", np.bincount(y_val, minlength=4))
+
+
 val_preds = model.predict(X_val)
 score = macro_f1(y_val, val_preds, n_classes=len(np.unique(y)))
 acc = np.mean(val_preds == y_val)
@@ -66,7 +57,7 @@ model.fit(X, y)
 X_test = test_df[feature_cols].values
 preds = model.predict(X_test)
 
-# # Map predictions to submission by index
+# Map predictions to submission by index
 # pred_df = pd.DataFrame({
 #     "index": test_df["index"].values,
 #     "Predicted": preds
@@ -74,6 +65,5 @@ preds = model.predict(X_test)
 
 # sub_df = sub_df.drop(columns=["Predicted"]).merge(pred_df, on="index", how="left")
 
-# # Save
 # sub_df.to_csv(OUT_PATH, index=False)
 # print(f"Saved predictions to {OUT_PATH}")
