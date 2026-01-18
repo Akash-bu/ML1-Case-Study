@@ -1,1 +1,1 @@
-Multilabel classification using Softmax Regression abd Weighted CE Loss
+Multilabel classification using Softmax Regression and Weighted CE Loss
