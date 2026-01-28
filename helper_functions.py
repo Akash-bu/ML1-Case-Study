@@ -47,3 +47,13 @@ def plot_loss_curve(losses, title="Training Loss"):
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.show()
+
+def pca_fit(X, n_components):
+    mean = np.mean(X, axis=0)
+    Xc = X - mean
+    _, _, Vt = np.linalg.svd(Xc, full_matrices=False)
+    components = Vt[:n_components].T
+    return mean, components
+
+def pca_transform(X, mean, components):
+    return (X - mean) @ components
