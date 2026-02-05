@@ -1,1 +1,1 @@
-Multilabel classification using Softmax Regression and Weighted CE Loss
+Multilabel classification using One-hidden-layer MLP (ReLU + Softmax)
