@@ -179,8 +179,8 @@ class Model(BaseMLModel):
                     vhat = vP / (1 - self.beta2 ** t)
                     P[:] = P - self.lr * mhat / (np.sqrt(vhat) + self.eps)
 
-            print(f"Epouch: {epoch}"
-                  f"{'':6s} Loss: {epoch_loss:.4f}", end='\n')
+            print(f"Epoch: {epoch}"
+                  f"{'':6s} Loss: {epoch_loss / n:.4f}", end='\n')
 
             self.loss_history.append(epoch_loss / n)
 
